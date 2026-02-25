@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build-blogs": "node scripts/preProcessing.js"
+    "build-blogs": "node scripts/preProcessing.js --target=blogs",
+    "build-news": "node scripts/preProcessing.js --target=news",
+    "build-pages": "node scripts/preProcessing.js --target=pages",
+    "build-content": "node scripts/preProcessing.js --target=all"
   },
   "dependencies": {
     "remark": "^14.0.2",

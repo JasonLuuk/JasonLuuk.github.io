@@ -10,6 +10,7 @@ class BlogWebsite
         this.blogSlug = "Example" ;
         this.blogRepoLink = "https://www.example.com/" ;
         this.authors = [] ;
+        this.useSlugMode = false ;
         this.init() ;
     }
 
@@ -18,7 +19,7 @@ class BlogWebsite
         const blogContent = document.getElementById("blog-content") ;
         const showError = (msg) => { if (blogContent) blogContent.innerHTML = `<p class="loading" style="color:#c00">${msg}</p>` ; } ;
         try {
-            this.getBlogId() ;
+            this.getRouteParams() ;
             await this.loadBlogInformation() ;
             await this.loadBlog() ;
             await this.loadTableOfContents() ;
@@ -42,9 +43,15 @@ class BlogWebsite
         return new URL(path.replace(/^\//, ""), window.location.origin + base).href ;
     }
 
-    getBlogId()
+    getRouteParams()
     {
         const urlParams = new URLSearchParams(window.location.search) ;
+        const slugParam = (urlParams.get("slug") || "").trim() ;
+        if (/^[A-Za-z0-9_-]+$/.test(slugParam)) {
+            this.useSlugMode = true ;
+            this.blogSlug = slugParam ;
+            return ;
+        }
         const idParam = urlParams.get("id") ;
         this.blogId = Number.parseInt(idParam,10) || 0 ;
     }
@@ -92,6 +99,14 @@ class BlogWebsite
     loadAuthorsList()
     {
         const authorsListElement = document.getElementById("authors-list") ;
+        if (!authorsListElement) return ;
+        const footer = document.querySelector(".blog-footer") ;
+        if (!Array.isArray(this.authors) || this.authors.length === 0) {
+            authorsListElement.innerHTML = "" ;
+            if (footer) footer.style.display = "none" ;
+            return ;
+        }
+        if (footer) footer.style.display = "" ;
         authorsListElement.innerHTML = this.authors
         .map((author) => `<span class="author-tag">${author}</span>`)
         .join("") ;
@@ -99,6 +114,15 @@ class BlogWebsite
 
     async loadBlogInformation()
     {
+        if (this.useSlugMode) {
+            this.blogName = this.blogSlug.replace(/[-_]/g, " ") ;
+            this.blogRepoLink = "" ;
+            this.authors = [] ;
+            this.loadBlogTitle() ;
+            this.loadRepoLink() ;
+            this.loadAuthorsList() ;
+            return ;
+        }
         await this.getBlogInformation() ;
         this.loadBlogTitle() ;
         this.loadRepoLink() ;
@@ -113,11 +137,26 @@ class BlogWebsite
     async loadBlog()
     {
         const blogContent = document.getElementById("blog-content") ;
-        const url = new URL(`../blogsHTML/${this.blogSlug}.html`, window.location.href).href ;
-        const response = await fetch(url) ;
-        if (!response.ok) throw new Error(`Blog ${this.blogSlug}.html: ${response.status}`) ;
-        const text = await response.text() ;
+        const targetDirs = this.useSlugMode ? ["pagesHTML", "blogsHTML"] : ["blogsHTML"] ;
+        let text = "" ;
+        let loaded = false ;
+
+        for (const dir of targetDirs) {
+            const url = new URL(`../${dir}/${this.blogSlug}.html`, window.location.href).href ;
+            const response = await fetch(url) ;
+            if (!response.ok) continue ;
+            text = await response.text() ;
+            loaded = true ;
+            break ;
+        }
+        if (!loaded) throw new Error(`Content ${this.blogSlug}.html not found`) ;
         blogContent.innerHTML = text ;
+        if (this.useSlugMode) {
+            const firstHeading = blogContent.querySelector("h1") ;
+            if (firstHeading && firstHeading.textContent) {
+                document.title = `${firstHeading.textContent.trim()} — Cangjie UK Team` ;
+            }
+        }
         this.embedYouTubeVideoLinks(blogContent) ;
         this.wrapBlogImages(blogContent) ;
     }

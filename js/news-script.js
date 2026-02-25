@@ -46,6 +46,6 @@ function baseUrl(path) {
     html = div.innerHTML;
     document.getElementById("news-content").innerHTML = html;
   } catch (e) {
-    document.getElementById("news-content").innerHTML = "<p class=\"error-message\">Could not load content. Run <code>npm run build-blogs</code> to generate HTML from markdown.</p>";
+    document.getElementById("news-content").innerHTML = "<p class=\"error-message\">Could not load content. Run <code>npm run build-news</code> (or <code>npm run build-content</code>) to generate HTML from markdown.</p>";
   }
 })();
