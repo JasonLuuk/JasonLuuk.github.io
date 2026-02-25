@@ -28,7 +28,7 @@ there is some dynamic[^1] functionality that you depend on, requiring you to pas
 Maybe you even end up having copies of this context object across different objects just to make sure that the relevant method has access to this context (e.g. the `.next()` method of an iterator does not take any context argument).
 
 To sidestep this, you could just create a global variable for the context data, but the 60s called and is trying to sell you a COBOL support contract...
-but seriously, this would throw a spanner in the works of any future attempts to refactor into parallel workloads, and clarity takes a real hit when shared mutable data can be referrenced all across the codebase.
+but seriously, this would throw a spanner in the works of any future attempts to refactor into parallel workloads, and clarity takes a real hit when shared mutable data can be referenced all across the codebase.
 
 <table>
 <tr>
@@ -170,9 +170,7 @@ A good showcase for this is the [Coroutine library]() which, among other things,
 
 
 ## Effect Handler Projects
-*Maybe formatted into cards similar to the blog post list on the home page:*
-
-- [tutorial](https://github.com/CJPLUK/effects-tutorial) *maybe subsumed by a migration to the lesson section of the website*
+- [tutorial](https://github.com/CJPLUK/effects-tutorial)
 - [Coroutine library]()
 - [Upload4cj fork]()
 - [Structured Concurrency]()
