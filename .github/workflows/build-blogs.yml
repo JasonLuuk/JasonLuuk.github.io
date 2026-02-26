@@ -6,6 +6,7 @@ on:
     paths:
       - 'blogs/**/*.md'
       - 'news/**/*.md'
+      - 'pages/**/*.md'
       - 'data/blogInformation.json'
       - 'data/newsInformation.json'
       - 'data/CangjieHighlights.json'
@@ -39,17 +40,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build blogs and news HTML
-        run: npm run build-blogs
+      - name: Build markdown HTML outputs
+        run: npm run build-content
 
       - name: Commit and push generated HTML and blog info
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add blogsHTML/ newsHTML/ data/blogInformation.json
+          git add blogsHTML/ newsHTML/ pagesHTML/ data/blogInformation.json
           if git diff --staged --quiet; then
             echo "No changes to commit."
           else
-            git commit -m "chore: regenerate blog/news HTML and blogInformation.json from markdown"
+            git commit -m "chore: regenerate markdown HTML outputs"
             git push
           fi

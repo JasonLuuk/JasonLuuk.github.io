@@ -45,10 +45,14 @@ async function convertMdFile(mdFilePath, outputDir)
     .use(remarkGfm)
     .use(() => (tree) => {
         visit(tree, 'code', (node) => {
-        console.log('found code block:', node.lang);
         const lang = node.lang || "plaintext" ;
         node.type = 'html';
-        node.value = highlighter.codeToHtml(node.value.trim(), lang);
+        try {
+            node.value = highlighter.codeToHtml(node.value.trim(), lang);
+        } catch (_) {
+            // Gracefully fall back for unsupported fence languages (e.g. mermaid).
+            node.value = highlighter.codeToHtml(node.value.trim(), "plaintext");
+        }
         });
     })
     .use(remarkRehype, { allowDangerousHtml: true })
@@ -173,5 +177,38 @@ async function processAllNews()
     }
 }
 
-await processAllBlogs();
-await processAllNews();
+const pagesDir = path.resolve('./pages');
+const pagesOutputDir = path.resolve('./pagesHTML');
+if (!fs.existsSync(pagesOutputDir)) fs.mkdirSync(pagesOutputDir);
+
+async function processAllPages()
+{
+    if (!fs.existsSync(pagesDir)) return;
+    const files = fs.readdirSync(pagesDir).filter(f => f.endsWith('.md'));
+    for (const file of files)
+    {
+        try
+        {
+            await convertMdFile(path.join(pagesDir, file), pagesOutputDir);
+        } catch (err)
+        {
+            console.error(`Error processing page ${file}:`, err);
+        }
+    }
+}
+
+function getBuildTarget() {
+    const targetArg = process.argv.find(arg => arg.startsWith('--target='));
+    if (!targetArg) return 'all';
+    const target = targetArg.split('=')[1];
+    if (target === 'blogs' || target === 'news' || target === 'pages' || target === 'all') {
+        return target;
+    }
+    return 'all';
+}
+
+const target = getBuildTarget();
+
+if (target === 'blogs' || target === 'all') await processAllBlogs();
+if (target === 'news' || target === 'all') await processAllNews();
+if (target === 'pages' || target === 'all') await processAllPages();
