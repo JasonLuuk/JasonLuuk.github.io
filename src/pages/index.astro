@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import { getCollection } from "astro:content";
 import type { CollectionEntry } from "astro:content";
+import BlogPostList from "../components/BlogPostList.astro";
 import cangjieLogo from "../assets/cangjie-logo.png";
 import discordIcon from "../assets/discord.png";
 import youtubeIcon from "../assets/youtube.png";
@@ -24,21 +25,6 @@ const formatDateForDisplay = (dmy: string) =>
         day: "2-digit",
     }).format(parseDmyDate(dmy));
 
-const getYouTubeVideoId = (url?: string) => {
-    if (!url) return "";
-    const match = url.match(
-        /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
-    );
-    return match ? match[1] : "";
-};
-
-const sortedBlogEntries = blogEntries.sort((a, b) => {
-    return (
-        parseDmyDate(b.data.date).getTime() -
-        parseDmyDate(a.data.date).getTime()
-    );
-});
-
 const sortedNewsEntries = newsEntries.sort((a, b) => {
     return (
         parseDmyDate(b.data.date).getTime() -
@@ -47,8 +33,9 @@ const sortedNewsEntries = newsEntries.sort((a, b) => {
 });
 
 const allTags = Array.from(
-    new Set(sortedBlogEntries.flatMap((entry) => entry.data.tags || [])),
+    new Set(blogEntries.flatMap((entry) => entry.data.tags || [])),
 ).sort((a, b) => a.localeCompare(b));
+const homeBlogFilterKey = "home-blog-filter";
 
 const navItems = [
     { label: "Download", href: "https://cangjie-lang.cn/en/download" },
@@ -118,105 +105,10 @@ const navItems = [
                     <div class="section-header">
                         <h2>Blog Posts</h2>
                     </div>
-                    <div class="projects-grid">
-                        {
-                            sortedBlogEntries.map((entry) => {
-                                const videoId = getYouTubeVideoId(
-                                    entry.data.descriptionVideo,
-                                );
-
-                                return (
-                                    <a
-                                        class="project-card"
-                                        href={`/blog/${entry.slug}/`}
-                                    >
-                                        <h3>{entry.data.title}</h3>
-                                        <p class="project-date">
-                                            {formatDateForDisplay(
-                                                entry.data.date,
-                                            )}
-                                        </p>
-
-                                        {(entry.data.description ||
-                                            entry.data.descriptionImage) && (
-                                            <div
-                                                class={`project-summary ${
-                                                    entry.data.descriptionImage
-                                                        ? "project-summary-with-image"
-                                                        : ""
-                                                }`}
-                                            >
-                                                {entry.data.description && (
-                                                    <p class="project-summary-text">
-                                                        {entry.data.description}
-                                                    </p>
-                                                )}
-                                                {entry.data
-                                                    .descriptionImage && (
-                                                    <div class="project-summary-thumb">
-                                                        <img
-                                                            src={
-                                                                entry.data
-                                                                    .descriptionImage
-                                                                    ?.src
-                                                            }
-                                                            alt={
-                                                                entry.data
-                                                                    .description ||
-                                                                entry.data.title
-                                                            }
-                                                            loading="lazy"
-                                                        />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {videoId && (
-                                            <div class="project-video-preview">
-                                                <div class="project-video-thumb">
-                                                    <img
-                                                        src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
-                                                        alt=""
-                                                        loading="lazy"
-                                                    />
-                                                    <span
-                                                        class="project-video-play"
-                                                        aria-hidden="true"
-                                                    />
-                                                </div>
-                                                <div class="project-video-meta">
-                                                    <span class="project-video-source">
-                                                        youtube.com
-                                                    </span>
-                                                    <strong class="project-video-title">
-                                                        {entry.data.title}
-                                                    </strong>
-                                                    <span class="project-video-desc">
-                                                        {entry.data
-                                                            .description || ""}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {entry.data.tags &&
-                                            entry.data.tags.length > 0 && (
-                                                <div class="project-tags">
-                                                    {entry.data.tags.map(
-                                                        (tag) => (
-                                                            <span class="tag">
-                                                                {tag}
-                                                            </span>
-                                                        ),
-                                                    )}
-                                                </div>
-                                            )}
-                                    </a>
-                                );
-                            })
-                        }
-                    </div>
+                    <BlogPostList
+                        tags={[]}
+                        interactiveFilterKey={homeBlogFilterKey}
+                    />
                 </section>
 
                 <aside class="sidebar-column" aria-label="Sidebar">
@@ -245,34 +137,21 @@ const navItems = [
                         </div>
                     </section>
 
-                    <section class="sidebar-card community-card">
-                        <h3>Community</h3>
-                        <p>
-                            Join our official Discord to ask questions, share
-                            ideas, and discuss with other Cangjie developers.
-                        </p>
-                        <a
-                            class="community-cta"
-                            href=""
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="Join Cangjie UK Discord server"
-                        >
-                            <img
-                                class="community-cta-icon"
-                                src={discordIcon.src}
-                                alt=""
-                                loading="lazy"
-                            />
-                        </a>
-                    </section>
-
                     <section class="sidebar-card tag-card">
                         <h3>Tag</h3>
                         <div class="tag-chips" aria-label="Blog tags">
                             {
                                 allTags.map((tag) => (
-                                    <span class="tag">{tag}</span>
+                                    <button
+                                        type="button"
+                                        class="tag"
+                                        data-blog-tag-chip
+                                        data-filter-key={homeBlogFilterKey}
+                                        data-tag={tag}
+                                        aria-pressed="false"
+                                    >
+                                        {tag}
+                                    </button>
                                 ))
                             }
                         </div>
@@ -383,4 +262,48 @@ const navItems = [
             </div>
         </main>
     </div>
+    <script is:inline define:vars={{ homeBlogFilterKey }}>
+        (() => {
+            const chips = Array.from(
+                document.querySelectorAll(
+                    `[data-blog-tag-chip][data-filter-key="${homeBlogFilterKey}"]`,
+                ),
+            );
+            if (chips.length === 0) return;
+
+            const selectedTags = new Set();
+
+            function publish() {
+                window.dispatchEvent(
+                    new CustomEvent("blog-tag-filter-change", {
+                        detail: {
+                            key: homeBlogFilterKey,
+                            tags: Array.from(selectedTags),
+                        },
+                    }),
+                );
+            }
+
+            for (const chip of chips) {
+                chip.addEventListener("click", () => {
+                    const tag = chip.getAttribute("data-tag") || "";
+                    if (!tag) return;
+
+                    if (selectedTags.has(tag)) {
+                        selectedTags.delete(tag);
+                        chip.classList.remove("active");
+                        chip.setAttribute("aria-pressed", "false");
+                    } else {
+                        selectedTags.add(tag);
+                        chip.classList.add("active");
+                        chip.setAttribute("aria-pressed", "true");
+                    }
+
+                    publish();
+                });
+            }
+
+            publish();
+        })();
+    </script>
 </Layout>

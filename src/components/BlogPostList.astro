@@ -1,0 +1,178 @@
+---
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+    tags?: string[];
+    interactiveFilterKey?: string;
+}
+
+const { tags, interactiveFilterKey } = Astro.props;
+
+const blogEntries: CollectionEntry<"blog">[] = await getCollection("blog");
+
+const parseDmyDate = (dmy: string) => {
+    const [day, month, year] = dmy.split("/");
+    return new Date(Number(year), Number(month) - 1, Number(day));
+};
+
+const formatDateForDisplay = (dmy: string) =>
+    new Intl.DateTimeFormat("en-GB", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+    }).format(parseDmyDate(dmy));
+
+const getYouTubeVideoId = (url?: string) => {
+    if (!url) return "";
+    const match = url.match(
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+    );
+    return match ? match[1] : "";
+};
+
+const sortedEntries = blogEntries.sort((a, b) => {
+    return (
+        parseDmyDate(b.data.date).getTime() -
+        parseDmyDate(a.data.date).getTime()
+    );
+});
+
+const activeTags = tags || [];
+
+const entriesToRender =
+    activeTags.length === 0
+        ? sortedEntries
+        : sortedEntries.filter((entry) => {
+              const entryTags = entry.data.tags || [];
+              return entryTags.some((tag) => activeTags.includes(tag));
+          });
+---
+
+<div class="projects-grid" data-blog-list-root data-blog-filter-key={interactiveFilterKey || ""}>
+    {
+        entriesToRender.map((entry) => {
+            const videoId = getYouTubeVideoId(entry.data.descriptionVideo);
+            const entryTags = (entry.data.tags || []).map((tag) =>
+                tag.toLowerCase(),
+            );
+
+            return (
+                <a
+                    class="project-card"
+                    href={`/blog/${entry.slug}/`}
+                    data-entry-tags={entryTags.join("|")}
+                >
+                    <h3>{entry.data.title}</h3>
+                    <p class="project-date">
+                        {formatDateForDisplay(entry.data.date)}
+                    </p>
+
+                    {(entry.data.description ||
+                        entry.data.descriptionImage) && (
+                        <div
+                            class={`project-summary ${
+                                entry.data.descriptionImage
+                                    ? "project-summary-with-image"
+                                    : ""
+                            }`}
+                        >
+                            {entry.data.description && (
+                                <p class="project-summary-text">
+                                    {entry.data.description}
+                                </p>
+                            )}
+                            {entry.data.descriptionImage && (
+                                <div class="project-summary-thumb">
+                                    <img
+                                        src={entry.data.descriptionImage.src}
+                                        alt={
+                                            entry.data.description ||
+                                            entry.data.title
+                                        }
+                                        loading="lazy"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {videoId && (
+                        <div class="project-video-preview">
+                            <div class="project-video-thumb">
+                                <img
+                                    src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+                                    alt=""
+                                    loading="lazy"
+                                />
+                                <span
+                                    class="project-video-play"
+                                    aria-hidden="true"
+                                />
+                            </div>
+                            <div class="project-video-meta">
+                                <span class="project-video-source">
+                                    youtube.com
+                                </span>
+                                <strong class="project-video-title">
+                                    {entry.data.title}
+                                </strong>
+                                <span class="project-video-desc">
+                                    {entry.data.description || ""}
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    {entry.data.tags && entry.data.tags.length > 0 && (
+                        <div class="project-tags">
+                            {entry.data.tags.map((tag) => (
+                                <span class="tag">{tag}</span>
+                            ))}
+                        </div>
+                    )}
+                </a>
+            );
+        })
+    }
+</div>
+
+{
+    interactiveFilterKey && (
+        <script is:inline define:vars={{ interactiveFilterKey }}>
+            (() => {
+                const root = document.querySelector(
+                    `[data-blog-list-root][data-blog-filter-key="${interactiveFilterKey}"]`,
+                );
+                if (!root) return;
+
+                const cards = Array.from(
+                    root.querySelectorAll(".project-card[data-entry-tags]"),
+                );
+
+                function applyFilter(tags) {
+                    const normalized = (tags || []).map((tag) =>
+                        String(tag).toLowerCase(),
+                    );
+
+                    for (const card of cards) {
+                        const raw = card.getAttribute("data-entry-tags") || "";
+                        const entryTags = raw ? raw.split("|") : [];
+                        const visible =
+                            normalized.length === 0 ||
+                            entryTags.some((tag) => normalized.includes(tag));
+                        card.style.display = visible ? "" : "none";
+                    }
+                }
+
+                window.addEventListener("blog-tag-filter-change", (event) => {
+                    const detail = event && event.detail ? event.detail : {};
+                    if (detail.key !== interactiveFilterKey) return;
+                    applyFilter(detail.tags || []);
+                });
+
+                applyFilter([]);
+            })();
+        </script>
+    )
+}
