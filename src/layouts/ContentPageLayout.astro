@@ -1,0 +1,40 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import TableOfContents from "../components/TableOfContents.astro";
+
+interface Heading {
+  slug: string;
+  text: string;
+  depth: number;
+}
+
+interface Props {
+  title: string;
+  description?: string;
+  headings: Heading[];
+}
+
+const {
+  title,
+  description = "Technical write-ups and resources from the Cangjie UK Team.",
+  headings = [],
+} = Astro.props;
+---
+
+<BaseLayout title={title} description={description} isBlogPage={true}>
+  <main class="blog-main">
+    <div class="blog-main-inner">
+      <div class="md-window">
+        <article id="blog-content" class="blog-content">
+          <slot />
+        </article>
+      </div>
+      <div class="md-content-links">
+        <div class="blog-info">
+          <h3>Table of Contents</h3>
+          <TableOfContents headings={headings} contentSelector="#blog-content" />
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>

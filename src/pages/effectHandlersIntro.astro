@@ -1,0 +1,22 @@
+---
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import ContentPageLayout from "../layouts/ContentPageLayout.astro";
+
+const pageEntries: CollectionEntry<"pages">[] = await getCollection("pages");
+const entry = pageEntries.find((item) => item.data.route === "effectHandlersIntro");
+
+if (!entry) {
+  throw new Error("Content page not found for route: effectHandlersIntro");
+}
+
+const { Content, headings } = await entry.render();
+---
+
+<ContentPageLayout
+  title={`${entry.data.title} — Cangjie UK Team`}
+  description="Technical write-ups and resources from the Cangjie UK Team."
+  headings={headings}
+>
+  <Content />
+</ContentPageLayout>
