@@ -67,22 +67,6 @@ const formatDate = (dateStr: string) => {
             <div class="md-window">
                 <article id="blog-content" class="blog-content">
                     {
-                        entry.data.descriptionVideo && (
-                            <div class="blog-video-embed">
-                                <iframe
-                                    src={entry.data.descriptionVideo.replace(
-                                        "watch?v=",
-                                        "embed/",
-                                    )}
-                                    title="YouTube video"
-                                    frameborder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                    allowfullscreen
-                                />
-                            </div>
-                        )
-                    }
-                    {
                         entry.data.descriptionImage && (
                             <img
                                 src={entry.data.descriptionImage}
@@ -135,4 +119,51 @@ const formatDate = (dateStr: string) => {
             </div>
         </div>
     </footer>
+
+    <script is:inline>
+        (() => {
+            const container = document.getElementById("blog-content");
+            if (!container) return;
+
+            const getYouTubeVideoId = (url) => {
+                if (!url || typeof url !== "string") return "";
+                const match = url.match(
+                    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+                );
+                return match ? match[1] : "";
+            };
+
+            const links = container.querySelectorAll(
+                'a[href*="youtube.com"], a[href*="youtu.be"]',
+            );
+            const seenBlocks = new Set();
+
+            links.forEach((a) => {
+                const videoId = getYouTubeVideoId(a.getAttribute("href") || "");
+                if (!videoId) return;
+
+                const block = a.closest("p");
+                if (!block || seenBlocks.has(block)) return;
+
+                const text = (block.textContent || "").toLowerCase();
+                if (!text.includes("video link")) return;
+
+                seenBlocks.add(block);
+                const embed = document.createElement("div");
+                embed.className = "blog-youtube-embed";
+                embed.innerHTML = `
+                  <div class="blog-youtube-embed-inner">
+                    <iframe
+                      src="https://www.youtube.com/embed/${videoId}"
+                      title="YouTube video"
+                      frameborder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowfullscreen
+                    ></iframe>
+                  </div>
+                `;
+                block.replaceWith(embed);
+            });
+        })();
+    </script>
 </BaseLayout>
