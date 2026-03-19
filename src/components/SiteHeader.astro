@@ -4,7 +4,7 @@ import cangjieLogo from "../assets/cangjie-logo.png";
 const navItems = [
     { label: "Home", href: "/" },
     { label: "Blog", href: "/blog" },
-    { label: "Learn", href: "/learn/learn.html" },
+    { label: "Learn", href: "/learn" },
     { label: "Effect Handlers", href: "/effectHandlersIntro" },
     { label: "Distributed Actors", href: "/distributed-actors" },
     { label: "About", href: "/about" },
@@ -34,11 +34,8 @@ const isActive = (href: string) => {
     if (target === "/") return currentPath === "/";
     if (target === "/blog")
         return currentPath === "/blog" || currentPath.startsWith("/blog/");
-    if (target === "/learn/learn.html")
-        return (
-            currentPath === "/learn/learn.html" ||
-            currentPath.startsWith("/learn/")
-        );
+    if (target === "/learn")
+        return currentPath === "/learn" || currentPath.startsWith("/learn/");
     return currentPath === target || currentPath.startsWith(`${target}/`);
 };
 ---

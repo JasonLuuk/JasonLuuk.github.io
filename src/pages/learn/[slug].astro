@@ -1,0 +1,187 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getLessons, type LessonEntry } from "../../lib/learn";
+import "../../styles/learn.css";
+
+export async function getStaticPaths() {
+    const lessons = await getLessons();
+    return lessons.map((lesson) => ({
+        params: { slug: lesson.slug },
+        props: { lesson },
+    }));
+}
+
+interface Props {
+    lesson: LessonEntry;
+}
+
+const { lesson } = Astro.props;
+const lessons = await getLessons();
+const lessonCount = lessons.length;
+
+if (lesson.index < 0 || lesson.index >= lessonCount) {
+    throw new Error(`Invalid lesson index for ${lesson.slug}`);
+}
+
+const previousLesson = lesson.index > 0 ? lessons[lesson.index - 1] : null;
+const nextLesson =
+    lesson.index < lessonCount - 1 ? lessons[lesson.index + 1] : null;
+const progress = ((lesson.index + 1) / lessonCount) * 100;
+
+const formatDifficulty = (difficulty: string) =>
+    difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+
+const description =
+    lesson.description || "No written explanation is available for this lesson.";
+
+const baseUrl = import.meta.env.BASE_URL;
+const withBase = (path: string) => {
+    if (path === "/") return baseUrl;
+    return `${baseUrl}${path.replace(/^\//, "")}`;
+};
+
+const overviewHref = withBase("/learn");
+const previousHref = previousLesson
+    ? withBase(`/learn/${previousLesson.slug}`)
+    : "";
+const nextHref = nextLesson ? withBase(`/learn/${nextLesson.slug}`) : "";
+---
+
+<Layout
+    title={`${lesson.title} — Learn Cangjie — The Cangjie Programming Language UK Team`}
+    description={lesson.preview}
+>
+    <main class="container learn-shell">
+        <div class="learn-lesson-header">
+            <a class="learn-back-link" href={overviewHref}>
+                &larr; Back to lessons
+            </a>
+            <div class="learn-progress-track" aria-hidden="true">
+                <div
+                    class="learn-progress-fill"
+                    style={`width: ${progress.toFixed(2)}%;`}
+                ></div>
+            </div>
+        </div>
+
+        <article class="learn-lesson-layout">
+            <section class="learn-description-panel" aria-label="Lesson notes">
+                <h1 class="learn-topic-title">
+                    <span class="learn-topic-number">{lesson.index + 1}</span>
+                    {lesson.title}
+                </h1>
+                <p class="learn-lesson-meta">
+                    <span
+                        class={`learn-difficulty learn-difficulty-${lesson.difficulty}`}
+                    >
+                        {formatDifficulty(lesson.difficulty)}
+                    </span>
+                    <span>{lesson.index + 1} of {lessonCount}</span>
+                </p>
+                <div class="learn-description-content">{description}</div>
+            </section>
+
+            <section class="learn-code-panel" aria-label="Cangjie code sample">
+                <div class="learn-code-header">
+                    <span class="learn-code-dot learn-code-dot-red"></span>
+                    <span class="learn-code-dot learn-code-dot-yellow"></span>
+                    <span class="learn-code-dot learn-code-dot-green"></span>
+                    <span class="learn-code-title">{lesson.fileName}.cj</span>
+                    <button class="learn-copy-button" type="button" data-copy-code>
+                        Copy
+                    </button>
+                </div>
+
+                <pre class="learn-code-block"><code data-lesson-code>{lesson.code}</code></pre>
+            </section>
+        </article>
+
+        <nav class="learn-navigation" aria-label="Lesson navigation">
+            {
+                previousLesson ? (
+                    <a
+                        class="learn-nav-button learn-nav-prev"
+                        href={previousHref}
+                        data-prev-link
+                    >
+                        &larr; Previous
+                    </a>
+                ) : (
+                    <span class="learn-nav-button learn-nav-prev is-disabled">
+                        &larr; Previous
+                    </span>
+                )
+            }
+
+            <p class="learn-topic-counter">
+                {lesson.index + 1} of {lessonCount}
+            </p>
+
+            {
+                nextLesson ? (
+                    <a
+                        class="learn-nav-button learn-nav-next"
+                        href={nextHref}
+                        data-next-link
+                    >
+                        Next &rarr;
+                    </a>
+                ) : (
+                    <span class="learn-nav-button learn-nav-next is-disabled">
+                        Next &rarr;
+                    </span>
+                )
+            }
+        </nav>
+    </main>
+
+    <script is:inline define:vars={{ overviewHref, previousHref, nextHref }}>
+        (() => {
+            const copyButton = document.querySelector("[data-copy-code]");
+            const codeElement = document.querySelector("[data-lesson-code]");
+
+            if (copyButton instanceof HTMLButtonElement && codeElement) {
+                copyButton.addEventListener("click", async () => {
+                    const codeText = codeElement.textContent || "";
+                    if (!codeText) return;
+
+                    try {
+                        await navigator.clipboard.writeText(codeText);
+                        copyButton.textContent = "Copied";
+                    } catch {
+                        copyButton.textContent = "Copy failed";
+                    }
+
+                    window.setTimeout(() => {
+                        copyButton.textContent = "Copy";
+                    }, 1400);
+                });
+            }
+
+            document.addEventListener("keydown", (event) => {
+                if (event.defaultPrevented) return;
+
+                const target = event.target;
+                if (target instanceof HTMLElement) {
+                    const tagName = target.tagName;
+                    if (
+                        target.isContentEditable ||
+                        tagName === "INPUT" ||
+                        tagName === "TEXTAREA" ||
+                        tagName === "SELECT"
+                    ) {
+                        return;
+                    }
+                }
+
+                if (event.key === "ArrowLeft" && previousHref) {
+                    window.location.href = previousHref;
+                } else if (event.key === "ArrowRight" && nextHref) {
+                    window.location.href = nextHref;
+                } else if (event.key === "Escape") {
+                    window.location.href = overviewHref;
+                }
+            });
+        })();
+    </script>
+</Layout>

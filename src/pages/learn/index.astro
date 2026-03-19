@@ -1,0 +1,112 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getLessons } from "../../lib/learn";
+import "../../styles/learn.css";
+
+const lessons = await getLessons();
+const firstLesson = lessons.length > 0 ? lessons[0] : null;
+
+const formatDifficulty = (difficulty: string) =>
+    difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+
+const baseUrl = import.meta.env.BASE_URL;
+const withBase = (path: string) => {
+    if (path === "/") return baseUrl;
+    return `${baseUrl}${path.replace(/^\//, "")}`;
+};
+
+const lessonLinks = lessons.map((lesson) => withBase(`/learn/${lesson.slug}`));
+---
+
+<Layout
+    title="Learn Cangjie — The Cangjie Programming Language UK Team"
+    description="Browse statically generated Cangjie lessons with explanations and runnable code samples."
+>
+    <main class="container learn-shell">
+        <header class="learn-hero">
+            <h1>Learn Cangjie</h1>
+            <p>
+                Master the language step by step. Every lesson in this section
+                is statically generated in Astro for faster page loads.
+            </p>
+        </header>
+
+        <section class="learn-directory" aria-labelledby="learn-directory-title">
+            <div class="learn-directory-header">
+                <h2 id="learn-directory-title">Choose a Lesson to Begin</h2>
+                <p>
+                    Lessons follow the original tutorial order, and you can jump
+                    directly to any topic.
+                </p>
+            </div>
+
+            {
+                lessons.length > 0 ? (
+                    <>
+                        <div class="learn-grid">
+                            {lessons.map((lesson) => (
+                                <a
+                                    class="learn-card"
+                                    href={withBase(`/learn/${lesson.slug}`)}
+                                >
+                                    <span class="learn-card-number">
+                                        {lesson.index + 1}
+                                    </span>
+                                    <h3>{lesson.title}</h3>
+                                    <p>{lesson.preview}</p>
+                                    <span
+                                        class={`learn-difficulty learn-difficulty-${lesson.difficulty}`}
+                                    >
+                                        {formatDifficulty(lesson.difficulty)}
+                                    </span>
+                                    <span class="learn-card-arrow">Go -></span>
+                                </a>
+                            ))}
+                        </div>
+
+                        <div class="learn-actions">
+                            {firstLesson && (
+                                <a
+                                    class="learn-action learn-action-primary"
+                                    href={withBase(`/learn/${firstLesson.slug}`)}
+                                >
+                                    Start from beginning
+                                </a>
+                            )}
+                            {firstLesson && (
+                                <a
+                                    class="learn-action learn-action-secondary"
+                                    href={withBase(`/learn/${firstLesson.slug}`)}
+                                    data-random-lesson
+                                >
+                                    Random lesson
+                                </a>
+                            )}
+                        </div>
+                    </>
+                ) : (
+                    <p class="learn-empty">
+                        No lessons were found in `public/learn/data.json`.
+                    </p>
+                )
+            }
+        </section>
+    </main>
+
+    <script is:inline define:vars={{ lessonLinks }}>
+        (() => {
+            const randomLessonLink = document.querySelector("[data-random-lesson]");
+            if (!(randomLessonLink instanceof HTMLAnchorElement)) return;
+
+            randomLessonLink.addEventListener("click", (event) => {
+                if (!Array.isArray(lessonLinks) || lessonLinks.length === 0) {
+                    return;
+                }
+
+                event.preventDefault();
+                const randomIndex = Math.floor(Math.random() * lessonLinks.length);
+                window.location.href = lessonLinks[randomIndex];
+            });
+        })();
+    </script>
+</Layout>
