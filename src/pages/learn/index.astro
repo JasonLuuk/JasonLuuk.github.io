@@ -46,17 +46,19 @@ const lessonLinks = lessons.map((lesson) => withBase(`/learn/${lesson.slug}`));
                                     class="learn-card"
                                     href={withBase(`/learn/${lesson.slug}`)}
                                 >
-                                    <span class="learn-card-number">
-                                        {lesson.index + 1}
-                                    </span>
-                                    <h3>{lesson.title}</h3>
+                                    <div class="learn-card-header">
+                                        <span class="learn-card-number">
+                                            {lesson.index + 1}
+                                        </span>
+                                        <h3>{lesson.title}</h3>
+                                    </div>
                                     <p>{lesson.preview}</p>
                                     <span
                                         class={`learn-difficulty learn-difficulty-${lesson.difficulty}`}
                                     >
                                         {formatDifficulty(lesson.difficulty)}
                                     </span>
-                                    <span class="learn-card-arrow">Go -></span>
+                                    <span class="learn-card-arrow">Go →</span>
                                 </a>
                             ))}
                         </div>
