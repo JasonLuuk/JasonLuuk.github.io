@@ -103,13 +103,11 @@ const getLessonTransitionName = (
                         {formatDifficulty(lesson.difficulty)}
                     </span>
                 </div>
-                <p
-                    class="learn-topic-preview"
+                <div
+                    class="learn-description-content"
+                    set:html={descriptionHtml}
                     transition:name={getLessonTransitionName("description")}
-                >
-                    {lesson.preview}
-                </p>
-                <div class="learn-description-content" set:html={descriptionHtml}></div>
+                />
             </section>
 
             <section class="learn-code-panel" aria-label="Cangjie code sample">
@@ -134,7 +132,10 @@ const getLessonTransitionName = (
             </section>
         </article>
 
-        <nav class="learn-navigation learn-navigation-fixed" aria-label="Lesson navigation">
+        <nav
+            class="learn-navigation learn-navigation-fixed"
+            aria-label="Lesson navigation"
+        >
             {
                 previousLesson ? (
                     <a
@@ -197,7 +198,8 @@ const getLessonTransitionName = (
 
             const normalizePath = (value) => {
                 try {
-                    const path = new URL(value, window.location.origin).pathname;
+                    const path = new URL(value, window.location.origin)
+                        .pathname;
                     const trimmed = path.replace(/\/+$/, "");
                     return trimmed.length > 0 ? trimmed : "/";
                 } catch {
