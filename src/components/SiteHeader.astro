@@ -42,7 +42,7 @@ const isActive = (href: string) => {
 
 <header class="site-header">
     <div class="site-header-inner">
-        <a href={withBase("/")} class="brand brand-link">
+        <a href={withBase("/")} class="brand brand-link" data-astro-reload>
             Cangjie UK
             <span class="brand-mark">
                 <img
@@ -59,6 +59,7 @@ const isActive = (href: string) => {
                     <a
                         href={withBase(item.href)}
                         class={`nav-link ${isActive(item.href) ? "active" : ""}`}
+                        data-astro-reload
                     >
                         {item.label}
                     </a>
@@ -75,6 +76,7 @@ const isActive = (href: string) => {
                         <a
                             href={withBase(item.href)}
                             class={`nav-link ${isActive(item.href) ? "active" : ""}`}
+                            data-astro-reload
                         >
                             {item.label}
                         </a>
