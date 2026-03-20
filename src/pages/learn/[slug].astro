@@ -27,6 +27,12 @@ const previousLesson = lesson.index > 0 ? lessons[lesson.index - 1] : null;
 const nextLesson =
     lesson.index < lessonCount - 1 ? lessons[lesson.index + 1] : null;
 const progress = ((lesson.index + 1) / lessonCount) * 100;
+const previousProgress = previousLesson
+    ? ((lesson.index - 1 + 1) / lessonCount) * 100
+    : 0;
+const nextProgress = nextLesson
+    ? ((lesson.index + 1 + 1) / lessonCount) * 100
+    : 100;
 
 const formatDifficulty = (difficulty: string) =>
     difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
@@ -46,6 +52,10 @@ const previousHref = previousLesson
     ? withBase(`/learn/${previousLesson.slug}`)
     : "";
 const nextHref = nextLesson ? withBase(`/learn/${nextLesson.slug}`) : "";
+
+const getLessonTransitionName = (
+    part: "card" | "number" | "title" | "difficulty" | "description",
+) => `learn-${part}-${lesson.slug}`;
 ---
 
 <Layout
@@ -69,18 +79,36 @@ const nextHref = nextLesson ? withBase(`/learn/${nextLesson.slug}`) : "";
         </div>
 
         <article class="learn-lesson-layout">
-            <section class="learn-description-panel" aria-label="Lesson notes">
+            <section
+                class="learn-description-panel"
+                aria-label="Lesson notes"
+                transition:name={getLessonTransitionName("card")}
+            >
                 <div class="learn-topic-header">
                     <h1 class="learn-topic-title">
-                        <span class="learn-topic-number">{lesson.index + 1}</span>
-                        {lesson.title}
+                        <span
+                            class="learn-topic-number"
+                            transition:name={getLessonTransitionName("number")}
+                        >
+                            {lesson.index + 1}
+                        </span>
+                        <span transition:name={getLessonTransitionName("title")}
+                            >{lesson.title}</span
+                        >
                     </h1>
                     <span
                         class={`learn-difficulty learn-difficulty-${lesson.difficulty}`}
+                        transition:name={getLessonTransitionName("difficulty")}
                     >
                         {formatDifficulty(lesson.difficulty)}
                     </span>
                 </div>
+                <p
+                    class="learn-topic-preview"
+                    transition:name={getLessonTransitionName("description")}
+                >
+                    {lesson.preview}
+                </p>
                 <div class="learn-description-content" set:html={descriptionHtml}></div>
             </section>
 
@@ -113,6 +141,8 @@ const nextHref = nextLesson ? withBase(`/learn/${nextLesson.slug}`) : "";
                         class="learn-nav-button learn-nav-prev"
                         href={previousHref}
                         data-prev-link
+                        data-progress-target={previousProgress.toFixed(2)}
+                        data-astro-reload
                     >
                         &larr; Previous
                     </a>
@@ -133,6 +163,8 @@ const nextHref = nextLesson ? withBase(`/learn/${nextLesson.slug}`) : "";
                         class="learn-nav-button learn-nav-next"
                         href={nextHref}
                         data-next-link
+                        data-progress-target={nextProgress.toFixed(2)}
+                        data-astro-reload
                     >
                         Next &rarr;
                     </a>
@@ -145,12 +177,22 @@ const nextHref = nextLesson ? withBase(`/learn/${nextLesson.slug}`) : "";
         </nav>
     </main>
 
-    <script is:inline define:vars={{ overviewHref, previousHref, nextHref }}>
+    <script
+        is:inline
+        define:vars={{
+            overviewHref,
+            previousHref,
+            nextHref,
+            previousProgress,
+            nextProgress,
+        }}
+    >
         (() => {
             const copyButton = document.querySelector("[data-copy-code]");
             const codeElement = document.querySelector(
                 ".learn-code-block code",
             );
+            const progressFill = document.querySelector(".learn-progress-fill");
 
             if (copyButton instanceof HTMLButtonElement && codeElement) {
                 copyButton.addEventListener("click", async () => {
@@ -167,6 +209,38 @@ const nextHref = nextLesson ? withBase(`/learn/${nextLesson.slug}`) : "";
                     window.setTimeout(() => {
                         copyButton.textContent = "Copy";
                     }, 1400);
+                });
+            }
+
+            const navigateWithProgress = (href, targetProgress) => {
+                if (!href) return;
+
+                if (!(progressFill instanceof HTMLElement)) {
+                    window.location.href = href;
+                    return;
+                }
+
+                progressFill.style.transition = "width 50ms ease-out";
+                progressFill.style.width = `${targetProgress.toFixed(2)}%`;
+
+                window.setTimeout(() => {
+                    window.location.href = href;
+                }, 55);
+            };
+
+            const previousLink = document.querySelector("[data-prev-link]");
+            if (previousLink instanceof HTMLAnchorElement) {
+                previousLink.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    navigateWithProgress(previousHref, previousProgress);
+                });
+            }
+
+            const nextLink = document.querySelector("[data-next-link]");
+            if (nextLink instanceof HTMLAnchorElement) {
+                nextLink.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    navigateWithProgress(nextHref, nextProgress);
                 });
             }
 
@@ -187,9 +261,9 @@ const nextHref = nextLesson ? withBase(`/learn/${nextLesson.slug}`) : "";
                 }
 
                 if (event.key === "ArrowLeft" && previousHref) {
-                    window.location.href = previousHref;
+                    navigateWithProgress(previousHref, previousProgress);
                 } else if (event.key === "ArrowRight" && nextHref) {
-                    window.location.href = nextHref;
+                    navigateWithProgress(nextHref, nextProgress);
                 } else if (event.key === "Escape") {
                     window.location.href = overviewHref;
                 }

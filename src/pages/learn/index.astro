@@ -16,6 +16,11 @@ const withBase = (path: string) => {
 };
 
 const lessonLinks = lessons.map((lesson) => withBase(`/learn/${lesson.slug}`));
+
+const getLessonTransitionName = (
+    slug: string,
+    part: "card" | "number" | "title" | "difficulty" | "description",
+) => `learn-${part}-${slug}`;
 ---
 
 <Layout
@@ -49,17 +54,45 @@ const lessonLinks = lessons.map((lesson) => withBase(`/learn/${lesson.slug}`));
                                 <a
                                     class="learn-card"
                                     href={withBase(`/learn/${lesson.slug}`)}
+                                    transition:name={getLessonTransitionName(
+                                        lesson.slug,
+                                        "card",
+                                    )}
                                 >
                                     <div class="learn-card-header">
-                                        <span class="learn-card-number">
+                                        <span
+                                            class="learn-card-number"
+                                            transition:name={getLessonTransitionName(
+                                                lesson.slug,
+                                                "number",
+                                            )}
+                                        >
                                             {lesson.index + 1}
                                         </span>
-                                        <h3>{lesson.title}</h3>
+                                        <h3
+                                            transition:name={getLessonTransitionName(
+                                                lesson.slug,
+                                                "title",
+                                            )}
+                                        >
+                                            {lesson.title}
+                                        </h3>
                                     </div>
-                                    <p>{lesson.preview}</p>
+                                    <p
+                                        transition:name={getLessonTransitionName(
+                                            lesson.slug,
+                                            "description",
+                                        )}
+                                    >
+                                        {lesson.preview}
+                                    </p>
                                     <div class="learn-card-footer">
                                         <span
                                             class={`learn-difficulty learn-difficulty-${lesson.difficulty}`}
+                                            transition:name={getLessonTransitionName(
+                                                lesson.slug,
+                                                "difficulty",
+                                            )}
                                         >
                                             {formatDifficulty(
                                                 lesson.difficulty,

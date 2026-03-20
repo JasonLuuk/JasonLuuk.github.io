@@ -314,6 +314,12 @@
     gap: 0.8rem;
 }
 
+.learn-topic-preview {
+    margin-bottom: 0.9rem;
+    color: #4f6472;
+    line-height: 1.5;
+}
+
 .learn-topic-number {
     display: inline-flex;
     align-items: center;
