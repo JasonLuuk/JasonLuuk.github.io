@@ -1,0 +1,299 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getLessons, type LessonEntry } from "../../lib/learn";
+import "../../styles/learn.css";
+
+export async function getStaticPaths() {
+    const lessons = await getLessons();
+    return lessons.map((lesson) => ({
+        params: { slug: lesson.slug },
+        props: { lesson },
+    }));
+}
+
+interface Props {
+    lesson: LessonEntry;
+}
+
+const { lesson } = Astro.props;
+const lessons = await getLessons();
+const lessonCount = lessons.length;
+
+if (lesson.index < 0 || lesson.index >= lessonCount) {
+    throw new Error(`Invalid lesson index for ${lesson.slug}`);
+}
+
+const previousLesson = lesson.index > 0 ? lessons[lesson.index - 1] : null;
+const nextLesson =
+    lesson.index < lessonCount - 1 ? lessons[lesson.index + 1] : null;
+const progress = ((lesson.index + 1) / lessonCount) * 100;
+const previousProgress = previousLesson
+    ? ((lesson.index - 1 + 1) / lessonCount) * 100
+    : 0;
+const nextProgress = nextLesson
+    ? ((lesson.index + 1 + 1) / lessonCount) * 100
+    : 100;
+
+const formatDifficulty = (difficulty: string) =>
+    difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+
+const descriptionHtml =
+    lesson.descriptionHtml ||
+    "<p>No written explanation is available for this lesson.</p>";
+
+const baseUrl = import.meta.env.BASE_URL;
+const withBase = (path: string) => {
+    if (path === "/") return baseUrl;
+    return `${baseUrl}${path.replace(/^\//, "")}`;
+};
+
+const overviewHref = withBase("/learn");
+const previousHref = previousLesson
+    ? withBase(`/learn/${previousLesson.slug}`)
+    : "";
+const nextHref = nextLesson ? withBase(`/learn/${nextLesson.slug}`) : "";
+
+const getLessonTransitionName = (
+    part: "card" | "number" | "title" | "difficulty" | "description",
+) => `learn-${part}-${lesson.slug}`;
+---
+
+<Layout
+    title={`${lesson.title} — Learn Cangjie — The Cangjie Programming Language UK Team`}
+    description={lesson.preview}
+    htmlClass="learn-lesson-page"
+>
+    <main class="container learn-shell learn-shell-with-fixed-nav">
+        <div class="learn-lesson-header">
+            <a class="learn-back-link" href={overviewHref}>
+                &larr; Back to lessons
+            </a>
+            <div class="learn-progress-track" aria-hidden="true">
+                <div
+                    class="learn-progress-fill"
+                    transition:name="learn-progress-fill"
+                    style={`width: ${progress.toFixed(2)}%;`}
+                >
+                </div>
+            </div>
+        </div>
+
+        <article class="learn-lesson-layout">
+            <section
+                class="learn-description-panel"
+                aria-label="Lesson notes"
+                transition:name={getLessonTransitionName("card")}
+            >
+                <div class="learn-topic-header">
+                    <h1 class="learn-topic-title">
+                        <span
+                            class="learn-topic-number"
+                            transition:name={getLessonTransitionName("number")}
+                        >
+                            {lesson.index + 1}
+                        </span>
+                        <span transition:name={getLessonTransitionName("title")}
+                            >{lesson.title}</span
+                        >
+                    </h1>
+                    <span
+                        class={`learn-difficulty learn-difficulty-${lesson.difficulty}`}
+                        transition:name={getLessonTransitionName("difficulty")}
+                    >
+                        {formatDifficulty(lesson.difficulty)}
+                    </span>
+                </div>
+                <div
+                    class="learn-description-content"
+                    set:html={descriptionHtml}
+                    transition:name={getLessonTransitionName("description")}
+                />
+            </section>
+
+            <section class="learn-code-panel" aria-label="Cangjie code sample">
+                <div class="learn-code-header">
+                    <span class="learn-code-dot learn-code-dot-red"></span>
+                    <span class="learn-code-dot learn-code-dot-yellow"></span>
+                    <span class="learn-code-dot learn-code-dot-green"></span>
+                    <span class="learn-code-title">{lesson.fileName}.cj</span>
+                    <button
+                        class="learn-copy-button"
+                        type="button"
+                        data-copy-code
+                    >
+                        Copy
+                    </button>
+                </div>
+
+                <div
+                    class="learn-code-block"
+                    set:html={lesson.highlightedCodeHtml}
+                />
+            </section>
+        </article>
+
+        <nav
+            class="learn-navigation learn-navigation-fixed"
+            aria-label="Lesson navigation"
+        >
+            {
+                previousLesson ? (
+                    <a
+                        class="learn-nav-button learn-nav-prev"
+                        href={previousHref}
+                        data-prev-link
+                        data-progress-target={previousProgress.toFixed(2)}
+                        data-astro-reload
+                    >
+                        &larr; Previous
+                    </a>
+                ) : (
+                    <span class="learn-nav-button learn-nav-prev is-disabled">
+                        &larr; Previous
+                    </span>
+                )
+            }
+
+            <p class="learn-topic-counter">
+                {lesson.index + 1} of {lessonCount}
+            </p>
+
+            {
+                nextLesson ? (
+                    <a
+                        class="learn-nav-button learn-nav-next"
+                        href={nextHref}
+                        data-next-link
+                        data-progress-target={nextProgress.toFixed(2)}
+                        data-astro-reload
+                    >
+                        Next &rarr;
+                    </a>
+                ) : (
+                    <span class="learn-nav-button learn-nav-next is-disabled">
+                        Next &rarr;
+                    </span>
+                )
+            }
+        </nav>
+    </main>
+
+    <script
+        is:inline
+        define:vars={{
+            overviewHref,
+            previousHref,
+            nextHref,
+            previousProgress,
+            nextProgress,
+        }}
+    >
+        (() => {
+            const copyButton = document.querySelector("[data-copy-code]");
+            const codeElement = document.querySelector(
+                ".learn-code-block code",
+            );
+            const codePanel = document.querySelector(".learn-code-panel");
+            const progressFill = document.querySelector(".learn-progress-fill");
+
+            const normalizePath = (value) => {
+                try {
+                    const path = new URL(value, window.location.origin)
+                        .pathname;
+                    const trimmed = path.replace(/\/+$/, "");
+                    return trimmed.length > 0 ? trimmed : "/";
+                } catch {
+                    return "";
+                }
+            };
+
+            if (codePanel instanceof HTMLElement) {
+                const referrerPath = document.referrer
+                    ? normalizePath(document.referrer)
+                    : "";
+                const overviewPath = normalizePath(overviewHref);
+                const shouldAnimateCodePanel =
+                    referrerPath.length > 0 && referrerPath === overviewPath;
+
+                if (shouldAnimateCodePanel) {
+                    codePanel.classList.add("learn-code-panel-enter");
+                }
+            }
+
+            if (copyButton instanceof HTMLButtonElement && codeElement) {
+                copyButton.addEventListener("click", async () => {
+                    const codeText = codeElement.textContent || "";
+                    if (!codeText) return;
+
+                    try {
+                        await navigator.clipboard.writeText(codeText);
+                        copyButton.textContent = "Copied";
+                    } catch {
+                        copyButton.textContent = "Copy failed";
+                    }
+
+                    window.setTimeout(() => {
+                        copyButton.textContent = "Copy";
+                    }, 1400);
+                });
+            }
+
+            const navigateWithProgress = (href, targetProgress) => {
+                if (!href) return;
+
+                if (!(progressFill instanceof HTMLElement)) {
+                    window.location.href = href;
+                    return;
+                }
+
+                progressFill.style.transition = "width 50ms ease-out";
+                progressFill.style.width = `${targetProgress.toFixed(2)}%`;
+
+                window.setTimeout(() => {
+                    window.location.href = href;
+                }, 55);
+            };
+
+            const previousLink = document.querySelector("[data-prev-link]");
+            if (previousLink instanceof HTMLAnchorElement) {
+                previousLink.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    navigateWithProgress(previousHref, previousProgress);
+                });
+            }
+
+            const nextLink = document.querySelector("[data-next-link]");
+            if (nextLink instanceof HTMLAnchorElement) {
+                nextLink.addEventListener("click", (event) => {
+                    event.preventDefault();
+                    navigateWithProgress(nextHref, nextProgress);
+                });
+            }
+
+            document.addEventListener("keydown", (event) => {
+                if (event.defaultPrevented) return;
+
+                const target = event.target;
+                if (target instanceof HTMLElement) {
+                    const tagName = target.tagName;
+                    if (
+                        target.isContentEditable ||
+                        tagName === "INPUT" ||
+                        tagName === "TEXTAREA" ||
+                        tagName === "SELECT"
+                    ) {
+                        return;
+                    }
+                }
+
+                if (event.key === "ArrowLeft" && previousHref) {
+                    navigateWithProgress(previousHref, previousProgress);
+                } else if (event.key === "ArrowRight" && nextHref) {
+                    navigateWithProgress(nextHref, nextProgress);
+                } else if (event.key === "Escape") {
+                    window.location.href = overviewHref;
+                }
+            });
+        })();
+    </script>
+</Layout>

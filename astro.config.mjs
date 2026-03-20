@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config';
 import rehypeMermaid from 'rehype-mermaid';
+import cangjieShikiLanguage from './src/config/cangjie-shiki-language.mjs';
 
 export default defineConfig({
   site: "https://cjpluk.github.io/Cangjie-UK-Team-Website/",
@@ -9,6 +10,12 @@ export default defineConfig({
     syntaxHighlight: {
       type: 'shiki',
       excludeLangs: ['mermaid'],
+    },
+    shikiConfig: {
+      langs: [cangjieShikiLanguage],
+      langAlias: {
+        cj: 'cangjie',
+      },
     },
     rehypePlugins: [
       [

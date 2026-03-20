@@ -5,6 +5,7 @@ import "../styles/blog.css";
 import cangjieIcon from "../assets/cangjie-icon.png";
 import SiteHeader from "../components/SiteHeader.astro";
 import HeroParallax from "../components/HeroParallax.astro";
+import { ViewTransitions } from "astro:transitions";
 
 interface Props {
     title: string;
@@ -24,6 +25,7 @@ const {
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <ViewTransitions />
         <title>{title}</title>
         <link rel="icon" href={cangjieIcon.src} type="image/png" />
         <meta name="description" content={description} />

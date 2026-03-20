@@ -31,4 +31,9 @@ const pages = defineCollection({
   }),
 });
 
-export const collections = { blog, news, pages };
+const lessons = defineCollection({
+  loader: async () => [],
+  schema: z.any(),
+});
+
+export const collections = { blog, news, pages, lessons };

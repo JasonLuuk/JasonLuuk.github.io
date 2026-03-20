@@ -209,6 +209,7 @@ main.blog-main .blog-main-inner > .md-content-links {
     font-weight: 600;
     font-size: 0.95rem;
     margin-bottom: 1.5rem;
+    margin-left: 1rem;
     transition: color 0.2s ease;
 }
 .news-back-link:hover {
@@ -521,11 +522,17 @@ main.blog-main .blog-main-inner > .md-content-links {
 @media (max-width: 768px) {
     main.blog-main .blog-main-inner {
         grid-template-columns: 1fr;
-        padding: 1rem;
+        padding-left: 0;
+        padding-right: 0;
+        padding-top: 1rem;
     }
 
     main.blog-main .blog-main-inner > .md-content-links {
         position: static;
+    }
+
+    .blog-main-inner {
+        gap: 1rem;
     }
 
     .blog-page-title {

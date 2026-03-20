@@ -1,0 +1,162 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getLessons } from "../../lib/learn";
+import "../../styles/learn.css";
+
+const lessons = await getLessons();
+const firstLesson = lessons.length > 0 ? lessons[0] : null;
+
+const formatDifficulty = (difficulty: string) =>
+    difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+
+const baseUrl = import.meta.env.BASE_URL;
+const withBase = (path: string) => {
+    if (path === "/") return baseUrl;
+    return `${baseUrl}${path.replace(/^\//, "")}`;
+};
+
+const lessonLinks = lessons.map((lesson) => withBase(`/learn/${lesson.slug}`));
+
+const getLessonTransitionName = (
+    slug: string,
+    part: "card" | "number" | "title" | "difficulty" | "description",
+) => `learn-${part}-${slug}`;
+---
+
+<BaseLayout
+    title="Learn Cangjie — The Cangjie Programming Language UK Team"
+    description="Browse statically generated Cangjie lessons with explanations and runnable code samples."
+>
+    <main class="container learn-shell">
+        <header class="hero-section">
+            <h1 class="main-title">Learn Cangjie</h1>
+            <p class="subtitle">
+                Master the modern programming language step by step.
+            </p>
+        </header>
+
+        <section
+            class="learn-directory"
+            aria-labelledby="learn-directory-title"
+        >
+            <div class="learn-directory-header">
+                <h2 id="learn-directory-title">Choose a Lesson to Begin</h2>
+                <p>
+                    Select any lesson below to start learning Cangjie
+                    programming. Each lesson builds upon the previous ones, but
+                    you can jump to any topic that interests you.
+                </p>
+            </div>
+
+            {
+                lessons.length > 0 ? (
+                    <>
+                        <div class="learn-grid">
+                            {lessons.map((lesson) => (
+                                <a
+                                    class="learn-card"
+                                    href={withBase(`/learn/${lesson.slug}`)}
+                                    transition:name={getLessonTransitionName(
+                                        lesson.slug,
+                                        "card",
+                                    )}
+                                >
+                                    <div class="learn-card-header">
+                                        <span
+                                            class="learn-card-number"
+                                            transition:name={getLessonTransitionName(
+                                                lesson.slug,
+                                                "number",
+                                            )}
+                                        >
+                                            {lesson.index + 1}
+                                        </span>
+                                        <h3
+                                            transition:name={getLessonTransitionName(
+                                                lesson.slug,
+                                                "title",
+                                            )}
+                                        >
+                                            {lesson.title}
+                                        </h3>
+                                    </div>
+                                    <p
+                                        transition:name={getLessonTransitionName(
+                                            lesson.slug,
+                                            "description",
+                                        )}
+                                    >
+                                        {lesson.preview}
+                                    </p>
+                                    <div class="learn-card-footer">
+                                        <span
+                                            class={`learn-difficulty learn-difficulty-${lesson.difficulty}`}
+                                            transition:name={getLessonTransitionName(
+                                                lesson.slug,
+                                                "difficulty",
+                                            )}
+                                        >
+                                            {formatDifficulty(
+                                                lesson.difficulty,
+                                            )}
+                                        </span>
+                                        <span class="learn-card-arrow">→</span>
+                                    </div>
+                                </a>
+                            ))}
+                        </div>
+
+                        <div class="learn-actions">
+                            {firstLesson && (
+                                <a
+                                    class="learn-action learn-action-primary"
+                                    href={withBase(
+                                        `/learn/${firstLesson.slug}`,
+                                    )}
+                                >
+                                    🚀 Start from Beginning
+                                </a>
+                            )}
+                            {firstLesson && (
+                                <a
+                                    class="learn-action learn-action-secondary"
+                                    href={withBase(
+                                        `/learn/${firstLesson.slug}`,
+                                    )}
+                                    data-random-lesson
+                                >
+                                    🎲 Random Lesson
+                                </a>
+                            )}
+                        </div>
+                    </>
+                ) : (
+                    <p class="learn-empty">
+                        No lessons were found in `src/content/lessons`.
+                    </p>
+                )
+            }
+        </section>
+    </main>
+
+    <script is:inline define:vars={{ lessonLinks }}>
+        (() => {
+            const randomLessonLink = document.querySelector(
+                "[data-random-lesson]",
+            );
+            if (!(randomLessonLink instanceof HTMLAnchorElement)) return;
+
+            randomLessonLink.addEventListener("click", (event) => {
+                if (!Array.isArray(lessonLinks) || lessonLinks.length === 0) {
+                    return;
+                }
+
+                event.preventDefault();
+                const randomIndex = Math.floor(
+                    Math.random() * lessonLinks.length,
+                );
+                window.location.href = lessonLinks[randomIndex];
+            });
+        })();
+    </script>
+</BaseLayout>

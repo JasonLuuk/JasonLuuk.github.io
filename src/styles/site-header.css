@@ -30,6 +30,7 @@
 .site-header .brand {
     font-weight: 700;
     letter-spacing: 0.2px;
+    line-height: 1;
     color: #0f4c4a;
     display: flex;
     align-items: center;
@@ -72,10 +73,14 @@
     display: none;
 }
 .site-header .nav-link {
+    display: inline-flex;
+    align-items: center;
     color: #2c3e50;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 1rem;
+    line-height: 1;
+    min-height: 1.5rem;
     position: relative;
     padding: 0 0.65rem;
 }
@@ -95,7 +100,6 @@
 }
 .site-header .nav-link.active {
     color: #0f766e;
-    font-weight: 700;
 }
 
 @media (max-width: 960px) {

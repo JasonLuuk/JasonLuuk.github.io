@@ -4,7 +4,7 @@ import cangjieLogo from "../assets/cangjie-logo.png";
 const navItems = [
     { label: "Home", href: "/" },
     { label: "Blog", href: "/blog" },
-    { label: "Learn", href: "/learn/learn.html" },
+    { label: "Learn", href: "/learn" },
     { label: "Effect Handlers", href: "/effectHandlersIntro" },
     { label: "Distributed Actors", href: "/distributed-actors" },
     { label: "About", href: "/about" },
@@ -34,25 +34,26 @@ const isActive = (href: string) => {
     if (target === "/") return currentPath === "/";
     if (target === "/blog")
         return currentPath === "/blog" || currentPath.startsWith("/blog/");
-    if (target === "/learn/learn.html")
-        return (
-            currentPath === "/learn/learn.html" ||
-            currentPath.startsWith("/learn/")
-        );
+    if (target === "/learn")
+        return currentPath === "/learn" || currentPath.startsWith("/learn/");
     return currentPath === target || currentPath.startsWith(`${target}/`);
 };
 ---
 
 <header class="site-header">
     <div class="site-header-inner">
-        <a href={withBase("/")} class="brand brand-link">
+        <a href={withBase("/")} class="brand brand-link" data-astro-reload>
             Cangjie UK
             <span class="brand-mark">
                 <img
                     class="brand-logo"
                     src={cangjieLogo.src}
                     alt="Cangjie Logo"
-                    loading="lazy"
+                    width={cangjieLogo.width}
+                    height={cangjieLogo.height}
+                    loading="eager"
+                    decoding="sync"
+                    fetchpriority="high"
                 />
             </span>
         </a>
@@ -62,6 +63,7 @@ const isActive = (href: string) => {
                     <a
                         href={withBase(item.href)}
                         class={`nav-link ${isActive(item.href) ? "active" : ""}`}
+                        data-astro-reload
                     >
                         {item.label}
                     </a>
@@ -78,6 +80,7 @@ const isActive = (href: string) => {
                         <a
                             href={withBase(item.href)}
                             class={`nav-link ${isActive(item.href) ? "active" : ""}`}
+                            data-astro-reload
                         >
                             {item.label}
                         </a>
