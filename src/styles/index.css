@@ -430,6 +430,8 @@ a.brand-link:hover {
     row-gap: 0.55rem;
     margin-top: 0;
     margin-bottom: 1.35rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
 }
 
 .section-header {
@@ -1034,7 +1036,7 @@ a.brand-link:hover {
 
 @media (max-width: 768px) {
     .container {
-        padding: 0 1rem 1rem;
+        padding: 0;
     }
 
     .hero-section::before {
@@ -1080,6 +1082,12 @@ a.brand-link:hover {
 
     .projects-section > .tag-chips {
         justify-content: flex-start;
+    }
+
+    section.learn-directory,
+    div.projects-grid > a.project-card {
+        /* Remove border radius in mobile view because container margin is remove */
+        border-radius: 0;
     }
 }
 
