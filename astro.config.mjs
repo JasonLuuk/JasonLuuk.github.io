@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 import rehypeMermaid from 'rehype-mermaid';
 import cangjieShikiLanguage from './src/config/cangjie-shiki-language.mjs';
 
@@ -32,6 +33,7 @@ export default defineConfig({
   site,
   base,
   output: 'static',
+  integrations: [sitemap()],
   markdown: {
     syntaxHighlight: {
       type: 'shiki',
