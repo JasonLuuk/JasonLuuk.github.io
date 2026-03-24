@@ -10,14 +10,22 @@ import { ViewTransitions } from "astro:transitions";
 interface Props {
     title: string;
     description?: string;
+    keywords?: string;
+    robots?: string;
     isBlogPage?: boolean;
 }
 
 const {
     title,
     description = "The Cangjie Programming Language UK Team – tutorials, projects, and practical resources for developers exploring the Cangjie programming language.",
+    keywords = "Cangjie, cangjie, Cangjie developers, cangjie developers, Cangjie UK team, cangjie UK team, Cangjie blogs, cangjie blogs, Cangjie programming, cangjie programming, Cangjie tutorial, cangjie tutorial, Cangjie tutorials, cangjie tutorials, the Cangjie programming language, the cangjie programming language, programming language, OpenHarmony, Oniro",
+    robots = "index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1",
     isBlogPage = false,
 } = Astro.props;
+
+const siteUrl = Astro.site ?? new URL("https://cjpluk.github.io/");
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const ogImage = new URL("/QRCodes/CangjieOfficialWesbite.png", siteUrl).toString();
 ---
 
 <!doctype html>
@@ -28,19 +36,22 @@ const {
         <ViewTransitions />
         <title>{title}</title>
         <link rel="icon" href={cangjieIcon.src} type="image/png" />
+        <link rel="canonical" href={canonicalUrl} />
         <meta name="description" content={description} />
+        <meta name="keywords" content={keywords} />
+        <meta name="robots" content={robots} />
+        <meta name="author" content="The Cangjie Programming Language UK Team" />
         <meta name="theme-color" content="#20b2aa" />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
+        <meta property="og:site_name" content="The Cangjie Programming Language UK Team" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://cangjie-uk-team.example/" />
-        <meta
-            property="og:image"
-            content="/QRCodes/CangjieOfficialWesbite.png"
-        />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:image" content={ogImage} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImage} />
         <link
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css"
