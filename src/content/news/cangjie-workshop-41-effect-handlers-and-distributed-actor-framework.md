@@ -1,22 +1,17 @@
 ---
 title: "Cangjie Workshop #41: Effect Handlers & Distributed Actor Framework"
-description: "In this session, researchers from Huawei's Programming Language Lab in Edinburgh share cutting-edge features for concurrent and distributed programming in Cangjie."
 date: "12/02/2026"
-authors:
-  - "Magnus Morton"
-  - "Steven Cheung"
-  - "Jingrun Wu"
-descriptionVideo: "https://www.youtube.com/watch?v=jGr-s9ABHRA"
-tags:
-  - "Effect Handlers"
-  - "Distributed Systems"
-  - "Actors"
-  - "Workshop"
 ---
 
 # Cangjie Workshop #41: Effect Handlers & Distributed Actor Framework
 
 In this session, researchers from Huawei's Programming Language Lab in Edinburgh share cutting-edge features for concurrent and distributed programming in Cangjie.
+
+## Speakers
+
+- Dr. Magnus Morton
+- Dr. Steven Cheung
+- Mr. Jingrun Wu
 
 🔗 **Video Link:** [https://www.youtube.com/watch?v=jGr-s9ABHRA](https://www.youtube.com/watch?v=jGr-s9ABHRA)
 

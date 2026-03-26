@@ -67,11 +67,13 @@ const formatDate = (dateStr: string) => {
             <div class="md-window">
                 <article id="blog-content" class="blog-content">
                     {
-                        entry.data.descriptionImage && (
+                        entry.data.descriptionImage &&
+                            entry.data.showDescriptionImageInPost !== false && (
                             <img
-                                src={entry.data.descriptionImage}
+                                src={entry.data.descriptionImage.src}
                                 alt={entry.data.title}
                                 class="blog-description-image"
+                                loading="lazy"
                             />
                         )
                     }
@@ -120,8 +122,9 @@ const formatDate = (dateStr: string) => {
         </div>
     </footer>
 
-    <script is:inline>
+    <script is:inline data-astro-rerun>
         (() => {
+            const enhanceBlogVideoLinks = () => {
             const container = document.getElementById("blog-content");
             if (!container) return;
 
@@ -164,6 +167,10 @@ const formatDate = (dateStr: string) => {
                 `;
                 block.replaceWith(embed);
             });
+            };
+
+            enhanceBlogVideoLinks();
+            document.addEventListener("astro:page-load", enhanceBlogVideoLinks);
         })();
     </script>
 </BaseLayout>
