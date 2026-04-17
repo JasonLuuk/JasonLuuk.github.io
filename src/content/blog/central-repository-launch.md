@@ -1,5 +1,4 @@
 ---
-slug: "cangjie-central-repository-launch"
 title: "Cangjie Central Repository Is Now Live — A New Era of Third-Party Package Management Has Arrived"
 description: "The official Cangjie Central Repository is now live, bringing version management, centralised package discovery, and automatic dependency resolution to the Cangjie ecosystem."
 date: "23/03/2026"
@@ -8,10 +7,8 @@ authors:
 descriptionImage: "figures/cangjie-central-repository.png"
 tags:
   - "Package Management"
-  - "Repository"
   - "Dependencies"
   - "Ecosystem"
-  - "Nightly Builds"
 ---
 
 # Cangjie Central Repository Is Now Live — A New Era of Third-Party Package Management Has Arrived
